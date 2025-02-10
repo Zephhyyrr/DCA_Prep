@@ -1,0 +1,25 @@
+{
+  "tasks": [
+    {
+      "id": 1,
+      "title": "Belajar Android",
+      "description": "Belajar dasar-dasar materi di kelas Dicoding",
+      "dueDate": 1577811600000,
+      "completed": false
+    },
+    {
+      "id": 2,
+      "title": "Simulasi Ujian Android",
+      "description": "Mencoba mengerjakan project latihan Android",
+      "dueDate": 1655226000000,
+      "completed": true
+    },
+    {
+      "id": 3,
+      "title": "Ambil Ujian Android",
+      "description": "Saatnya menjadi Android Developer bersertifikat!",
+      "dueDate": 1735578000000,
+      "completed": false
+    }
+  ]
+}
