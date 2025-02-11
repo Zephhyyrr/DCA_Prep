@@ -39,6 +39,11 @@ class TaskActivity : AppCompatActivity() {
         }
 
         //TODO 6 : Initiate RecyclerView with LayoutManager, Adapter, and update database when onCheckChange
+        recycler = findViewById(R.id.rv_task)
+        taskAdapter = TaskAdapter { task, isChecked ->
+            taskViewModel.completeTask(task, isChecked)
+        }
+        recycler.adapter = taskAdapter
 
         initAction()
 
@@ -48,10 +53,14 @@ class TaskActivity : AppCompatActivity() {
         taskViewModel.tasks.observe(this, Observer(this::updateData))
 
         //TODO 15 : Fixing bug : snackBar not show when task completed
+        taskViewModel.snackbarText.observe(this, Observer { event ->
+            showSnackBar(event)
+        })
     }
 
     private fun updateData(task: PagingData<Task>) {
         //TODO 7 : Submit PagingData to adapter
+        taskAdapter.submitData(lifecycle, task)
     }
 
     private fun showSnackBar(eventMessage: Event<Int>) {

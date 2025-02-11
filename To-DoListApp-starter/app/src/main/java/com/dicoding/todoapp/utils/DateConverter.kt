@@ -4,7 +4,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 object DateConverter {
-    fun convertMillisToString(timeMillis: Long): String {
+    fun convertMillisToString(timeMillis: Int): String {
         val calendar = Calendar.getInstance()
         calendar.timeInMillis = timeMillis
         val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
