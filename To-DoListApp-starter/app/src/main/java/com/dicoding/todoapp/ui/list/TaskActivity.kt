@@ -11,6 +11,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.paging.PagingData
 import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.dicoding.todoapp.R
 import com.dicoding.todoapp.data.Task
@@ -32,44 +33,36 @@ class TaskActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_task)
         setSupportActionBar(findViewById(R.id.toolbar))
-
-        findViewById<FloatingActionButton>(R.id.fab).setOnClickListener { view ->
+        findViewById<FloatingActionButton>(R.id.fab).setOnClickListener {
             val addIntent = Intent(this, AddTaskActivity::class.java)
             startActivity(addIntent)
         }
-
-        //TODO 6 : Initiate RecyclerView with LayoutManager, Adapter, and update database when onCheckChange
         recycler = findViewById(R.id.rv_task)
+        recycler.layoutManager = LinearLayoutManager(this)
         taskAdapter = TaskAdapter { task, isChecked ->
             taskViewModel.completeTask(task, isChecked)
         }
         recycler.adapter = taskAdapter
-
         initAction()
-
         val factory = ViewModelFactory.getInstance(this)
         taskViewModel = ViewModelProvider(this, factory).get(TaskViewModel::class.java)
-
-        taskViewModel.tasks.observe(this, Observer(this::updateData))
-
-        //TODO 15 : Fixing bug : snackBar not show when task completed
-        taskViewModel.snackbarText.observe(this, Observer { event ->
-            showSnackBar(event)
+        taskViewModel.tasks.observe(this, Observer { pagingData: PagingData<Task> ->
+            taskAdapter.submitData(lifecycle, pagingData)
+        })
+        taskViewModel.snackbarText.observe(this, Observer { event: Event<Int> ->
+            event.getContentIfNotHandled()?.let { message ->
+                Snackbar.make(
+                    findViewById(R.id.coordinator_layout),
+                    getString(message),
+                    Snackbar.LENGTH_SHORT
+                ).show()
+            }
         })
     }
 
-    private fun updateData(task: PagingData<Task>) {
-        //TODO 7 : Submit PagingData to adapter
-        taskAdapter.submitData(lifecycle, task)
-    }
-
-    private fun showSnackBar(eventMessage: Event<Int>) {
-        val message = eventMessage.getContentIfNotHandled() ?: return
-        Snackbar.make(
-            findViewById(R.id.coordinator_layout),
-            getString(message),
-            Snackbar.LENGTH_SHORT
-        ).show()
+    override fun onResume() {
+        super.onResume()
+        taskAdapter.refresh()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -84,19 +77,20 @@ class TaskActivity : AppCompatActivity() {
                 startActivity(settingIntent)
                 true
             }
+
             R.id.action_filter -> {
                 showFilteringPopUpMenu()
                 true
             }
+
             else -> super.onOptionsItemSelected(item)
         }
     }
 
     private fun showFilteringPopUpMenu() {
         val view = findViewById<View>(R.id.action_filter) ?: return
-        PopupMenu(this, view).run {
+        PopupMenu(this, view).apply {
             menuInflater.inflate(R.menu.filter_tasks, menu)
-
             setOnMenuItemClickListener {
                 taskViewModel.filter(
                     when (it.itemId) {
@@ -129,10 +123,9 @@ class TaskActivity : AppCompatActivity() {
             }
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                val task = (viewHolder as TaskAdapter.TaskViewHolder).getTask
-                taskViewModel.deleteTask(task)
+                val task = (viewHolder as TaskAdapter.TaskViewHolder).currentTask
+                task?.let { taskViewModel.deleteTask(it) }
             }
-
         })
         itemTouchHelper.attachToRecyclerView(recycler)
     }

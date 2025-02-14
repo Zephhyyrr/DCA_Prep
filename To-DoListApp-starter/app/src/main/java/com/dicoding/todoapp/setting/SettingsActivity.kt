@@ -6,10 +6,12 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreference
+import androidx.work.*
 import com.dicoding.todoapp.R
+import com.dicoding.todoapp.notification.NotificationWorker
+import java.util.concurrent.TimeUnit
 
 class SettingsActivity : AppCompatActivity() {
 
@@ -39,7 +41,7 @@ class SettingsActivity : AppCompatActivity() {
         }
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        if (Build.VERSION.SDK_INT > 32) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
     }
@@ -49,12 +51,34 @@ class SettingsActivity : AppCompatActivity() {
             setPreferencesFromResource(R.xml.root_preferences, rootKey)
 
             val prefNotification = findPreference<SwitchPreference>(getString(R.string.pref_key_notify))
-            prefNotification?.setOnPreferenceChangeListener { preference, newValue ->
+            prefNotification?.setOnPreferenceChangeListener { _, newValue ->
                 val channelName = getString(R.string.notify_channel_name)
-                //TODO 13 : Schedule and cancel daily reminder using WorkManager with data channelName
+
+                if (newValue as Boolean) {
+                    scheduleDailyReminder(channelName)
+                } else {
+                    cancelDailyReminder()
+                }
+
                 true
             }
+        }
 
+        private fun scheduleDailyReminder(channelName: String) {
+            val workRequest = PeriodicWorkRequestBuilder<NotificationWorker>(1, TimeUnit.DAYS)
+                .setInputData(workDataOf("channelName" to channelName))
+                .addTag(NotificationWorker::class.java.simpleName)
+                .build()
+
+            WorkManager.getInstance(requireContext()).enqueueUniquePeriodicWork(
+                NotificationWorker::class.java.simpleName,
+                ExistingPeriodicWorkPolicy.REPLACE,
+                workRequest
+            )
+        }
+
+        private fun cancelDailyReminder() {
+            WorkManager.getInstance(requireContext()).cancelAllWorkByTag(NotificationWorker::class.java.simpleName)
         }
     }
 }

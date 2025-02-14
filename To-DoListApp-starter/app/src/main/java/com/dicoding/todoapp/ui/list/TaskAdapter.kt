@@ -1,6 +1,8 @@
 package com.dicoding.todoapp.ui.list
 
 import android.content.Intent
+import android.graphics.Paint
+import android.graphics.Typeface
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,29 +21,30 @@ class TaskAdapter(
     private val onCheckedChange: (Task, Boolean) -> Unit
 ) : PagingDataAdapter<Task, TaskAdapter.TaskViewHolder>(DIFF_CALLBACK) {
 
-    //TODO 8 : Create and initialize ViewHolder
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.task_item, parent, false)
         return TaskViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
-        val task = getItem(position) as Task
-        //TODO 9 : Bind data to ViewHolder (You can run app to check)
-        holder.bind(task)
-        when {
-            //TODO 10 : Display title based on status using TitleTextView
-            task.isCompleted == 1 -> {
-                //DONE
-                holder.cbComplete.isChecked = true
-            }
-            task.dueDateMillis < System.currentTimeMillis() -> {
-                //OVERDUE
-                holder.cbComplete.isChecked = false
-            }
-            else -> {
-                //NORMAL
-                holder.cbComplete.isChecked = false
+        getItem(position)?.let { task ->
+            holder.bind(task)
+            when {
+                task.isCompleted == 1 -> {
+                    holder.tvTitle.paintFlags = holder.tvTitle.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
+                    holder.tvTitle.setTypeface(null, Typeface.ITALIC)
+                    holder.cbComplete.isChecked = true
+                }
+                task.dueDateMillis.toLong() < System.currentTimeMillis() -> {
+                    holder.tvTitle.paintFlags = holder.tvTitle.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
+                    holder.tvTitle.setTypeface(null, Typeface.BOLD)
+                    holder.cbComplete.isChecked = false
+                }
+                else -> {
+                    holder.tvTitle.paintFlags = holder.tvTitle.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
+                    holder.tvTitle.setTypeface(null, Typeface.NORMAL)
+                    holder.cbComplete.isChecked = false
+                }
             }
         }
     }
@@ -51,21 +54,26 @@ class TaskAdapter(
         val cbComplete: CheckBox = itemView.findViewById(R.id.item_checkbox)
         private val tvDueDate: TextView = itemView.findViewById(R.id.item_tv_date)
 
-        lateinit var getTask: Task
+        var currentTask: Task? = null
 
         fun bind(task: Task) {
-            getTask = task
+            currentTask = task
             tvTitle.text = task.title
-            tvDueDate.text = DateConverter.convertMillisToString(task.dueDateMillis)
+            tvDueDate.text = DateConverter.convertMillisToString((task.dueDateMillis))
+
             itemView.setOnClickListener {
                 val detailIntent = Intent(itemView.context, DetailTaskActivity::class.java)
                 detailIntent.putExtra(TASK_ID, task.id)
                 itemView.context.startActivity(detailIntent)
             }
-            cbComplete.setOnClickListener {
-                onCheckedChange(task, !task.isCompleted)
+
+            cbComplete.setOnCheckedChangeListener(null)
+            cbComplete.isChecked = task.isCompleted == 1
+            cbComplete.setOnCheckedChangeListener { _, isChecked ->
+                onCheckedChange(task, isChecked)
             }
         }
+
     }
 
     companion object {

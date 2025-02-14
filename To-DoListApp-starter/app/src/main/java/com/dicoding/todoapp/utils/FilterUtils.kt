@@ -8,10 +8,10 @@ object FilterUtils {
         val simpleQuery = StringBuilder().append("SELECT * FROM tasks ")
         when (filter) {
             TasksFilterType.COMPLETED_TASKS -> {
-                simpleQuery.append("WHERE completed = 1")
+                simpleQuery.append("WHERE isCompleted = 1")
             }
             TasksFilterType.ACTIVE_TASKS -> {
-                simpleQuery.append("WHERE completed = 0")
+                simpleQuery.append("WHERE isCompleted = 0")
             }
             else -> {
                 // ALL_TASKS

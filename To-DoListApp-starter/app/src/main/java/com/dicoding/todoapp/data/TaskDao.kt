@@ -20,7 +20,7 @@ interface TaskDao {
     @Query("SELECT * FROM tasks WHERE id = :taskId")
     fun getTaskById(taskId: Int): LiveData<Task>
 
-    @Query("SELECT * FROM tasks WHERE isCompleted = 0 ORDER BY dueDateMillis ASC LIMIT 1")
+    @Query("SELECT * FROM tasks WHERE isCompleted = 0 ORDER BY dueDateMillis DESC LIMIT 1")
     fun getNearestActiveTask(): Task?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -31,6 +31,9 @@ interface TaskDao {
 
     @Delete
     suspend fun deleteTask(task: Task)
+
+    @Query("Update tasks SET title = :title, description = :description, dueDateMillis = :dueDateMillis WHERE id = :taskId")
+    suspend fun updateTask(taskId: Int, title: String, description: String, dueDateMillis: Long)
 
     @Query("UPDATE tasks SET isCompleted = :completed WHERE id = :taskId")
     suspend fun updateCompleted(taskId: Int, completed: Int)

@@ -29,20 +29,22 @@ class TaskRepository(private val tasksDao: TaskDao) {
         }
     }
 
-    // TODO 4 : Use FilterUtils.getFilteredQuery to create filterable query
-    // TODO 5 : Build PagingData with configuration
     fun getTasks(filter: TasksFilterType): LiveData<PagingData<Task>> {
         val query = FilterUtils.getFilteredQuery(filter)
 
-        val pagingSource = tasksDao.getTasks(query)
+        val pagingSourceFactory = { tasksDao.getTasks(query) }
 
         val pagingConfig = PagingConfig(
             pageSize = PAGE_SIZE,
             enablePlaceholders = PLACEHOLDERS
         )
 
-        return Pager(pagingConfig) { pagingSource }.liveData
+        return Pager(
+            config = pagingConfig,
+            pagingSourceFactory = pagingSourceFactory
+        ).liveData
     }
+
 
     fun getTaskById(taskId: Int): LiveData<Task> {
         return tasksDao.getTaskById(taskId)
@@ -54,6 +56,10 @@ class TaskRepository(private val tasksDao: TaskDao) {
 
     suspend fun insertTask(newTask: Task): Long {
         return tasksDao.insertTask(newTask)
+    }
+
+    suspend fun updateTask(task: Task) {
+        tasksDao.updateTask(task.id, task.title, task.description, task.dueDateMillis.toLong())
     }
 
     suspend fun deleteTask(task: Task) {
