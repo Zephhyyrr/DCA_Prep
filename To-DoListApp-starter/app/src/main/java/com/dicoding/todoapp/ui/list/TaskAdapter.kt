@@ -1,8 +1,7 @@
 package com.dicoding.todoapp.ui.list
 
 import android.content.Intent
-import android.graphics.Paint
-import android.graphics.Typeface
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -29,20 +28,20 @@ class TaskAdapter(
     override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
         getItem(position)?.let { task ->
             holder.bind(task)
+
             when {
                 task.isCompleted == 1 -> {
-                    holder.tvTitle.paintFlags = holder.tvTitle.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
-                    holder.tvTitle.setTypeface(null, Typeface.ITALIC)
+                    holder.tvTitle.state = TaskTitleView.DONE
                     holder.cbComplete.isChecked = true
                 }
-                task.dueDateMillis.toLong() < System.currentTimeMillis() -> {
-                    holder.tvTitle.paintFlags = holder.tvTitle.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
-                    holder.tvTitle.setTypeface(null, Typeface.BOLD)
+
+                task.dueDateMillis * 1000L < System.currentTimeMillis() -> {
+                    holder.tvTitle.state = TaskTitleView.OVERDUE
                     holder.cbComplete.isChecked = false
                 }
+
                 else -> {
-                    holder.tvTitle.paintFlags = holder.tvTitle.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
-                    holder.tvTitle.setTypeface(null, Typeface.NORMAL)
+                    holder.tvTitle.state = TaskTitleView.NORMAL
                     holder.cbComplete.isChecked = false
                 }
             }
@@ -50,7 +49,7 @@ class TaskAdapter(
     }
 
     inner class TaskViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val tvTitle: TextView = itemView.findViewById(R.id.item_tv_title)
+        val tvTitle: TaskTitleView = itemView.findViewById(R.id.item_tv_title)
         val cbComplete: CheckBox = itemView.findViewById(R.id.item_checkbox)
         private val tvDueDate: TextView = itemView.findViewById(R.id.item_tv_date)
 
@@ -59,7 +58,7 @@ class TaskAdapter(
         fun bind(task: Task) {
             currentTask = task
             tvTitle.text = task.title
-            tvDueDate.text = DateConverter.convertMillisToString((task.dueDateMillis))
+            tvDueDate.text = DateConverter.convertMillisToString(task.dueDateMillis)
 
             itemView.setOnClickListener {
                 val detailIntent = Intent(itemView.context, DetailTaskActivity::class.java)
