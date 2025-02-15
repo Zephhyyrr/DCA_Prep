@@ -13,6 +13,7 @@ import androidx.core.app.TaskStackBuilder
 import androidx.core.content.ContextCompat
 import androidx.work.Worker
 import androidx.work.WorkerParameters
+import com.dicoding.todoapp.R
 import com.dicoding.todoapp.data.Task
 import com.dicoding.todoapp.data.TaskRepository
 import com.dicoding.todoapp.ui.detail.DetailTaskActivity
@@ -71,10 +72,13 @@ class NotificationWorker(ctx: Context, params: WorkerParameters) : Worker(ctx, p
 
         createNotificationChannel()
 
+        val dateFormat = android.text.format.DateFormat.getDateFormat(applicationContext)
+        val formattedDate = dateFormat.format(task.dueDateMillis * 1000L)
+
         val notification = NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
-            .setSmallIcon(applicationContext.applicationInfo.icon)
-            .setContentTitle("Task Due: ${task.title}")
-            .setContentText(task.description)
+            .setSmallIcon(R.drawable.ic_notifications)
+            .setContentTitle(task.title)
+            .setContentText("Due in $formattedDate")
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)

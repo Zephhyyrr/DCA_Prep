@@ -1,7 +1,6 @@
 package com.dicoding.todoapp.ui.list
 
 import android.content.Intent
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -28,21 +27,25 @@ class TaskAdapter(
     override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
         getItem(position)?.let { task ->
             holder.bind(task)
-
             when {
+                task.isCompleted == 0 -> {
+                    val taskDueDateMillis = task.dueDateMillis * 1000L
+                    val currentMillis = System.currentTimeMillis()
+
+                    val taskDueDate = DateConverter.convertMillisToString(task.dueDateMillis)
+                    val currentDate = DateConverter.convertMillisToString((currentMillis / 1000).toInt())
+
+                    if (taskDueDate == currentDate || taskDueDateMillis >= currentMillis) {
+                        holder.tvTitle.state = TaskTitleView.NORMAL
+                    } else {
+                        holder.tvTitle.state = TaskTitleView.OVERDUE
+                    }
+
+                    holder.cbComplete.isChecked = false
+                }
                 task.isCompleted == 1 -> {
                     holder.tvTitle.state = TaskTitleView.DONE
                     holder.cbComplete.isChecked = true
-                }
-
-                task.dueDateMillis * 1000L < System.currentTimeMillis() -> {
-                    holder.tvTitle.state = TaskTitleView.OVERDUE
-                    holder.cbComplete.isChecked = false
-                }
-
-                else -> {
-                    holder.tvTitle.state = TaskTitleView.NORMAL
-                    holder.cbComplete.isChecked = false
                 }
             }
         }
