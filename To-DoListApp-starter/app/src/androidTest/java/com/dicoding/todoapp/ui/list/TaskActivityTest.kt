@@ -1,4 +1,4 @@
-package com.dicoding.todoapp.ui
+package com.dicoding.todoapp.ui.list
 
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -11,7 +11,6 @@ import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.action.ViewActions.click
 import com.dicoding.todoapp.R
 import com.dicoding.todoapp.ui.add.AddTaskActivity
-import com.dicoding.todoapp.ui.list.TaskActivity
 import org.junit.After
 import org.junit.Before
 import org.junit.Test

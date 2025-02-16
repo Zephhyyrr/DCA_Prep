@@ -10,6 +10,7 @@ import com.dicoding.courseschedule.util.QueryType
 import com.dicoding.courseschedule.util.QueryUtil
 import com.dicoding.courseschedule.util.SortType
 import com.dicoding.courseschedule.util.executeThread
+import java.util.Calendar
 
 //TODO 4 : Implement repository with appropriate dao
 class DataRepository(private val dao: CourseDao) {
@@ -27,14 +28,16 @@ class DataRepository(private val dao: CourseDao) {
         ).liveData
     }
 
-    fun getCourse(id: Int): LiveData<Course> {
-        return dao.getCourse(id)
+    fun getCourse(courseId: Int): LiveData<Course?> {
+        return dao.getCourseById(courseId)
     }
 
     fun getTodaySchedule(): List<Course> {
-        val currentDay = (System.currentTimeMillis() / (1000 * 60 * 60 * 24) + 4) % 7
-        return dao.getTodaySchedule(currentDay.toInt())
+        val calendar = Calendar.getInstance()
+        val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
+        return dao.getTodaySchedule(dayOfWeek)
     }
+
 
     fun insert(course: Course) = executeThread {
         dao.insert(course)
@@ -49,13 +52,10 @@ class DataRepository(private val dao: CourseDao) {
         private var instance: DataRepository? = null
         private const val PAGE_SIZE = 10
 
-        fun getInstance(context: Context): DataRepository? {
-            return instance ?: synchronized(DataRepository::class.java) {
-                if (instance == null) {
-                    val database = CourseDatabase.getInstance(context)
-                    instance = DataRepository(database.courseDao())
-                }
-                return instance
+        fun getInstance(context: Context): DataRepository {
+            return instance ?: synchronized(this) {
+                val database = CourseDatabase.getInstance(context)
+                DataRepository(database.courseDao()).also { instance = it }
             }
         }
     }

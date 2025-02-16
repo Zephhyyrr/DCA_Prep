@@ -9,6 +9,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.PopupMenu
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -17,8 +18,13 @@ import com.dicoding.courseschedule.R
 import com.dicoding.courseschedule.data.Course
 import com.dicoding.courseschedule.paging.CourseAdapter
 import com.dicoding.courseschedule.paging.CourseViewHolder
+import com.dicoding.courseschedule.ui.add.AddCourseActivity
+import com.dicoding.courseschedule.ui.detail.DetailActivity
 import com.dicoding.courseschedule.ui.setting.SettingsActivity
 import com.dicoding.courseschedule.util.SortType
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 class ListActivity : AppCompatActivity() {
 
@@ -35,7 +41,7 @@ class ListActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         val factory = ListViewModelFactory.createFactory(this)
-        viewModel = ViewModelProvider(this, factory).get(ListViewModel::class.java)
+        viewModel = ViewModelProvider(this, factory)[ListViewModel::class.java]
 
         setFabClick()
         setUpRecycler()
@@ -50,50 +56,51 @@ class ListActivity : AppCompatActivity() {
     }
 
     private fun onCourseClick(course: Course) {
-        //TODO 8 : Intent and show detailed course
+        val intent = Intent(this, DetailActivity::class.java)
+        intent.putExtra(DetailActivity.COURSE_ID, course.id)
+        startActivity(intent)
     }
 
     private fun initAction() {
         val callback = Callback()
         val itemTouchHelper = ItemTouchHelper(callback)
-
         itemTouchHelper.attachToRecyclerView(rvCourse)
     }
 
     private fun updateList() {
         viewModel.courses.observe(this) {
-            courseAdapter.submitData(lifecycle, it)
-            courseAdapter.addLoadStateListener { states ->
-                if (states.refresh is LoadState.NotLoading) {
-                    findViewById<TextView>(R.id.tv_empty_list).visibility =
-                        if (courseAdapter.itemCount == 0) View.VISIBLE else View.GONE
-                }
+            lifecycleScope.launch {
+                courseAdapter.submitData(it)
             }
+        }
+        courseAdapter.addLoadStateListener { states ->
+            findViewById<TextView>(R.id.tv_empty_list).visibility =
+                if (states.refresh is LoadState.NotLoading && courseAdapter.itemCount == 0) View.VISIBLE else View.GONE
         }
     }
 
     private fun setFabClick() {
-        //TODO 9 : Create AddCourseActivity to set new course schedule
+        val fab = findViewById<FloatingActionButton>(R.id.fab)
+        fab.setOnClickListener {
+            val intent = Intent(this, AddCourseActivity::class.java)
+            startActivity(intent)
+        }
     }
 
-    //TODO 14 : Fixing bug : sort menu not show and course not deleted when list is swiped
     private fun showSortMenu() {
-        val view = findViewById<View>(R.id.action_sort) ?: return
-        PopupMenu(this, view).run {
-            menuInflater.inflate(R.menu.sort_course, menu)
+        val anchorView = findViewById<View>(R.id.action_sort)
+        val popupMenu = PopupMenu(this, anchorView)
+        popupMenu.menuInflater.inflate(R.menu.sort_course, popupMenu.menu)
 
-            setOnMenuItemClickListener {
-                viewModel.sort(
-                    when (it.itemId) {
-                        R.id.sort_time -> SortType.TIME
-                        R.id.sort_course_name -> SortType.COURSE_NAME
-                        else -> SortType.LECTURER
-                    }
-                )
-                true
+        popupMenu.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.sort_time -> viewModel.sort(SortType.TIME)
+                R.id.sort_course_name -> viewModel.sort(SortType.COURSE_NAME)
+                R.id.sort_lecturer -> viewModel.sort(SortType.LECTURER)
             }
-            show()
+            true
         }
+        popupMenu.show()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -104,13 +111,16 @@ class ListActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_sort -> {
+                showSortMenu()
                 true
             }
+
             R.id.action_settings -> {
                 val intent = Intent(this, SettingsActivity::class.java)
                 startActivity(intent)
                 true
             }
+
             else -> super.onOptionsItemSelected(item)
         }
     }
@@ -118,8 +128,7 @@ class ListActivity : AppCompatActivity() {
     inner class Callback : ItemTouchHelper.Callback() {
 
         override fun getMovementFlags(
-            recyclerView: RecyclerView,
-            viewHolder: RecyclerView.ViewHolder
+            recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder
         ): Int {
             return makeMovementFlags(0, ItemTouchHelper.RIGHT)
         }
@@ -134,7 +143,7 @@ class ListActivity : AppCompatActivity() {
 
         override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
             val course = (viewHolder as CourseViewHolder).getCourse()
-
+            viewModel.delete(course)
         }
     }
 }

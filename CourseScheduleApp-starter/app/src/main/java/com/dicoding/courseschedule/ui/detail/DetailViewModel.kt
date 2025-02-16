@@ -7,7 +7,7 @@ import com.dicoding.courseschedule.data.DataRepository
 
 class DetailViewModel(private val repository: DataRepository, courseId: Int) : ViewModel() {
 
-    val course: LiveData<Course> = repository.getCourse(courseId)
+    val course: LiveData<Course?> = repository.getCourse(courseId)
 
     fun delete() {
         course.value?.let {

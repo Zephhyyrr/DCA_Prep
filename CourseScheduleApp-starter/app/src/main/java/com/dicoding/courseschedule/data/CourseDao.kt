@@ -7,20 +7,19 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.RawQuery
-import androidx.sqlite.db.SupportSQLiteQuery
+import androidx.sqlite.db.SimpleSQLiteQuery
 
 //TODO 2 : Define data access object (DAO)
 @Dao
 interface CourseDao {
+    @RawQuery(observedEntities = [Course::class])
+    fun getNearestSchedule(query: SimpleSQLiteQuery): LiveData<Course?>
 
     @RawQuery(observedEntities = [Course::class])
-    fun getNearestSchedule(query: SupportSQLiteQuery): LiveData<Course?>
+    fun getAll(query: SimpleSQLiteQuery): PagingSource<Int, Course>
 
     @RawQuery(observedEntities = [Course::class])
-    fun getAll(query: SupportSQLiteQuery): PagingSource<Int, Course>
-
-    @Query("SELECT * FROM course WHERE id = :id")
-    fun getCourse(id: Int): LiveData<Course>
+    fun getCourse(query: SimpleSQLiteQuery): PagingSource<Int, Course>
 
     @Query("SELECT * FROM course WHERE day = :day ORDER BY startTime ASC")
     fun getTodaySchedule(day: Int): List<Course>
@@ -30,4 +29,7 @@ interface CourseDao {
 
     @Delete
     fun delete(course: Course)
+
+    @Query("SELECT * FROM course WHERE id = :courseId")
+    fun getCourseById(courseId: Int): LiveData<Course?>
 }

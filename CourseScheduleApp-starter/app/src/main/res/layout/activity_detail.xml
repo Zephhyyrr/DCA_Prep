@@ -21,7 +21,7 @@
             app:drawableStartCompat="@drawable/ic_book" />
 
         <TextView
-            android:id="@+id/tv_course_name"
+            android:id="@+id/tv_course_name_detail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="34dp"
@@ -38,7 +38,7 @@
             app:drawableStartCompat="@drawable/ic_time" />
 
         <TextView
-            android:id="@+id/tv_time"
+            android:id="@+id/tv_time_detail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="34dp"
@@ -55,7 +55,7 @@
             app:drawableStartCompat="@drawable/ic_lecturer" />
 
         <TextView
-            android:id="@+id/tv_lecturer"
+            android:id="@+id/tv_lecturer_detail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="34dp"
@@ -72,7 +72,7 @@
             app:drawableStartCompat="@drawable/ic_note" />
 
         <TextView
-            android:id="@+id/tv_note"
+            android:id="@+id/tv_note_detail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="34dp"
