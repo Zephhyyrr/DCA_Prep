@@ -40,7 +40,8 @@ class HomeActivity : AppCompatActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(
                     this, Manifest.permission.POST_NOTIFICATIONS
-                ) != PackageManager.PERMISSION_GRANTED) {
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
                 ActivityCompat.requestPermissions(
                     this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), 0
                 )
@@ -53,7 +54,7 @@ class HomeActivity : AppCompatActivity() {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 if (modelClass.isAssignableFrom(HomeViewModel::class.java)) {
-                    return repository?.let { HomeViewModel(it) } as T
+                    return HomeViewModel(repository) as T
                 }
                 throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
             }

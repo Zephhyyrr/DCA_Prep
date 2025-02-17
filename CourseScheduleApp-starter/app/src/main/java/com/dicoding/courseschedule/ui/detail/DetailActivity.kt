@@ -64,6 +64,7 @@ class DetailActivity : AppCompatActivity() {
                     show()
                 }
             }
+
             android.R.id.home -> {
                 onBackPressedDispatcher.onBackPressed()
                 return true

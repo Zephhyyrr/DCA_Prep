@@ -44,7 +44,7 @@ class AddCourseActivity : AppCompatActivity(), TimePickerFragment.DialogTimeList
         window.statusBarColor = ContextCompat.getColor(this, R.color.purple_700)
 
 
-        val repository = DataRepository.getInstance(applicationContext)!!
+        val repository = DataRepository.getInstance(applicationContext)
         viewModel = ViewModelProvider(
             this,
             AddCourseViewModelFactory(repository)
