@@ -16,6 +16,7 @@ class RandomHabitActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContentView(R.layout.activity_random_habit)
 
         val viewPager: ViewPager2 = findViewById(R.id.view_pager)
@@ -28,24 +29,24 @@ class RandomHabitActivity : AppCompatActivity() {
 
         val tabs: TabLayout = findViewById(R.id.tabs)
         TabLayoutMediator(tabs, viewPager) { tab, position ->
-            tab.text = "Habit ${position+1}"
+            tab.text = "Habit ${position + 1}"
         }.attach()
 
         val factory = ViewModelFactory.getInstance(this)
         val viewModel = ViewModelProvider(this, factory).get(RandomHabitViewModel::class.java)
 
         viewModel.priorityLevelHigh.observe(this) {
-            if (it != null){
+            if (it != null) {
                 adapter.submitData(RandomHabitAdapter.PageType.HIGH, it)
             }
         }
         viewModel.priorityLevelMedium.observe(this) {
-            if (it != null){
+            if (it != null) {
                 adapter.submitData(RandomHabitAdapter.PageType.MEDIUM, it)
             }
         }
         viewModel.priorityLevelLow.observe(this) {
-            if (it != null){
+            if (it != null) {
                 adapter.submitData(RandomHabitAdapter.PageType.LOW, it)
             }
         }

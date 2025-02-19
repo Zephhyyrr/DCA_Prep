@@ -19,6 +19,6 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("com.dicoding.habitsapp", appContext.packageName)
+        assertEquals("com.dicoding.habitapp", appContext.packageName)
     }
 }

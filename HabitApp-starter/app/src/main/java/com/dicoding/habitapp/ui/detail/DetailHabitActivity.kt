@@ -5,9 +5,9 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.ViewModelProvider
 import com.dicoding.habitapp.R
 import com.dicoding.habitapp.data.Habit
 import com.dicoding.habitapp.ui.ViewModelFactory
@@ -19,12 +19,13 @@ import com.google.android.material.appbar.CollapsingToolbarLayout
 class DetailHabitActivity : AppCompatActivity() {
 
     companion object {
-        const val HABIT_ID = "habit_id"
-        const val EXTRA_HABIT = "extra_habit"
+        const val EXTRA_HABIT_ID = "extra_habit_id"
     }
 
     private lateinit var selectedHabit: Habit
-    private lateinit var viewModel: DetailHabitViewModel
+    private val viewModel: DetailHabitViewModel by viewModels {
+        ViewModelFactory.getInstance(this)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,42 +34,52 @@ class DetailHabitActivity : AppCompatActivity() {
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        val habitId = intent.getIntExtra(HABIT_ID, 0)
+        val habitId = intent.getIntExtra(EXTRA_HABIT_ID, -1)
+        if (habitId == -1) {
+            finish() // Jika ID tidak valid, tutup activity
+            return
+        }
 
-        val factory = ViewModelFactory.getInstance(this)
-        viewModel = ViewModelProvider(this, factory).get(DetailHabitViewModel::class.java)
+        viewModel.start(habitId) // Ambil data habit berdasarkan ID
 
-        viewModel.start(habitId)
+
         viewModel.habit.observe(this) { habit ->
-            if (habit != null) {
-                selectedHabit = habit
-                findViewById<CollapsingToolbarLayout>(R.id.toolbar_layout).title = habit.title
-                findViewById<EditText>(R.id.detail_ed_time_minutes).setText(habit.minutesFocus.toString())
-                findViewById<EditText>(R.id.detail_ed_start_time).setText(habit.startTime)
-                when (habit.priorityLevel) {
-                    resources.getStringArray(R.array.priority_level)[0] -> {
-                        findViewById<View>(R.id.detail_priority_level).setBackgroundColor(
-                            ContextCompat.getColor(this, R.color.red)
-                        )
-                    }
-                    resources.getStringArray(R.array.priority_level)[1] -> {
-                        findViewById<View>(R.id.detail_priority_level).setBackgroundColor(
-                            ContextCompat.getColor(this, R.color.yellow)
-                        )
-                    }
-                    else -> {
-                        findViewById<View>(R.id.detail_priority_level).setBackgroundColor(
-                            ContextCompat.getColor(this, R.color.green)
-                        )
-                    }
-                }
+            habit?.let {
+                selectedHabit = it // Simpan objek Habit yang didapat dari ViewModel
+                updateUI(it)
             }
         }
+
+
 
         findViewById<Button>(R.id.btn_open_count_down).setOnClickListener {
             val intent = Intent(this, CountDownActivity::class.java)
             intent.putExtra(HABIT, selectedHabit)
             startActivity(intent)
+        }
+    }
+
+    private fun updateUI(habit: Habit) {
+        findViewById<CollapsingToolbarLayout>(R.id.toolbar_layout).title = habit.title
+        findViewById<EditText>(R.id.detail_ed_time_minutes).setText(habit.minutesFocus.toString())
+        findViewById<EditText>(R.id.detail_ed_start_time).setText(habit.startTime)
+
+        when (habit.priorityLevel) {
+            resources.getStringArray(R.array.priority_level)[0] -> {
+                findViewById<View>(R.id.detail_priority_level).setBackgroundColor(
+                    ContextCompat.getColor(this, R.color.red)
+                )
+            }
+            resources.getStringArray(R.array.priority_level)[1] -> {
+                findViewById<View>(R.id.detail_priority_level).setBackgroundColor(
+                    ContextCompat.getColor(this, R.color.yellow)
+                )
+            }
+            else -> {
+                findViewById<View>(R.id.detail_priority_level).setBackgroundColor(
+                    ContextCompat.getColor(this, R.color.green)
+                )
+            }
         }
     }
 }

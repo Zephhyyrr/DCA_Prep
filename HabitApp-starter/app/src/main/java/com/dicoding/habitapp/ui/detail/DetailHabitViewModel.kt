@@ -1,5 +1,6 @@
 package com.dicoding.habitapp.ui.detail
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -20,6 +21,7 @@ class DetailHabitViewModel(private val habitRepository: HabitRepository): ViewMo
         if (habitId == _habitId.value) {
             return
         }
+        Log.d("DetailHabitViewModel", "Setting habitId: $habitId")
         _habitId.value = habitId
     }
 

@@ -41,6 +41,7 @@ class CountDownViewModel : ViewModel() {
     }
 
     fun startTimer() {
+        _eventCountDownFinish.value = false
         timer?.start()
     }
 

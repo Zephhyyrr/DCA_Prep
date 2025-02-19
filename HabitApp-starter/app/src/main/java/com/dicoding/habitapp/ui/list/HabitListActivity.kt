@@ -11,13 +11,14 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.asFlow
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.dicoding.habitapp.R
-import com.dicoding.habitapp.data.Habit
+import com.dicoding.habitapp.setting.SettingsActivity
 import com.dicoding.habitapp.ui.ViewModelFactory
 import com.dicoding.habitapp.ui.add.AddHabitActivity
 import com.dicoding.habitapp.ui.detail.DetailHabitActivity
+import com.dicoding.habitapp.ui.random.RandomHabitActivity
 import com.dicoding.habitapp.utils.HabitSortType
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
@@ -41,13 +42,16 @@ class HabitListActivity : AppCompatActivity() {
         }
 
         //TODO 6 : Initiate RecyclerView with LayoutManager
-        recycler = findViewById(R.id.recycler_view)
-        recycler.layoutManager = LinearLayoutManager(this)
+        recycler = findViewById(R.id.rv_habit)
+        recycler.layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
+
         adapter = HabitAdapter { habit ->
-            val intent = Intent(this, DetailHabitActivity::class.java)
-            intent.putExtra(DetailHabitActivity.EXTRA_HABIT, habit)
+            val intent = Intent(this, DetailHabitActivity::class.java).apply {
+                putExtra(DetailHabitActivity.EXTRA_HABIT_ID, habit.id)
+            }
             startActivity(intent)
         }
+
         recycler.adapter = adapter
 
         initAction()
@@ -90,6 +94,18 @@ class HabitListActivity : AppCompatActivity() {
         return when (item.itemId) {
             R.id.action_sort -> {
                 showSortingPopUpMenu()
+                true
+            }
+
+            R.id.action_settings -> {
+                val settingIntent = Intent(this, SettingsActivity::class.java)
+                startActivity(settingIntent)
+                true
+            }
+
+            R.id.action_random -> {
+                val randomIntent = Intent(this, RandomHabitActivity::class.java)
+                startActivity(randomIntent)
                 true
             }
 

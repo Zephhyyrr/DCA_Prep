@@ -14,6 +14,7 @@ import com.dicoding.habitapp.R
 import com.dicoding.habitapp.data.Habit
 import com.dicoding.habitapp.ui.ViewModelFactory
 import com.dicoding.habitapp.utils.TimePickerFragment
+import com.google.android.material.snackbar.Snackbar
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -41,21 +42,26 @@ class AddHabitActivity : AppCompatActivity(), TimePickerFragment.DialogTimeListe
         return when (item.itemId) {
             R.id.action_save -> {
                 val title = findViewById<EditText>(R.id.add_ed_title).text.toString()
-                val minutesFocus = findViewById<EditText>(R.id.add_ed_minutes_focus).text.toString().toInt()
+                val minutesFocusString = findViewById<EditText>(R.id.add_ed_minutes_focus).text.toString()
                 val startTime = findViewById<TextView>(R.id.add_tv_start_time).text.toString()
                 val priorityLevel = findViewById<Spinner>(R.id.sp_priority_level).selectedItem.toString()
-                if (title.isNotEmpty()) {
-                    val habit = Habit(title = title, minutesFocus = minutesFocus, startTime = startTime, priorityLevel = priorityLevel)
-                    viewModel.saveHabit(habit)
-                    finish()
-                } else {
-                    Toast.makeText(this, getString(R.string.empty_message), Toast.LENGTH_SHORT).show()
+
+                if (title.isNotEmpty() && minutesFocusString.isNotEmpty()) {
+                    try {
+                        val minutesFocus = minutesFocusString.toInt()
+                        val habit = Habit(title = title, minutesFocus = minutesFocus, startTime = startTime, priorityLevel = priorityLevel)
+                        viewModel.saveHabit(habit)
+                        finish()
+                    } catch (e: NumberFormatException) {
+                        Snackbar.make(findViewById(R.id.add_layout), R.string.empty_message, Snackbar.LENGTH_SHORT).show()
+                    }
                 }
                 true
             }
             else -> super.onOptionsItemSelected(item)
         }
     }
+
 
     fun showTimePicker(view: View) {
         val dialogFragment = TimePickerFragment()
